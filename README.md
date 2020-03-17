@@ -11,6 +11,32 @@
 ### RStudio Learning Survey Data
 [github.com/rstudio/learning-r-survey](https://github.com/rstudio/learning-r-survey)
 
+RStudio has conducted informal surveys in 2018 and 2019 on how R users learn and
+use the language. Carl Howe presented the 2018 results in his rstudio::conf 2019
+talk [The next million R
+users](https://resources.rstudio.com/rstudio-conf-2019/the-next-million-r-users).
+The 2019 results have not been officially analyzed and released.
+
+All the results are available in the repository
+[rstudio/learning-r-survey](https://github.com/rstudio/learning-r-survey). The
+2018 results are the safest option because they have already been analyzed. I
+(John B) was able to import the 2019 results with `readr::read_tsv()`, but there
+were some parsing errors, so this could be more complicated.
+
+```
+url2018 <- "https://raw.githubusercontent.com/rstudio/learning-r-survey/master/2018/data/survey_English.tsv"
+survey2018 <- read.delim(url2018, stringsAsFactors = FALSE)
+
+url2019 <- "https://raw.githubusercontent.com/rstudio/learning-r-survey/master/2019/data/2019%20English%20R%20Community%20Survey%20Responses.tsv"
+survey2019 <- readr::read_tsv(url2019)
+```
+
+The full text for the 2018 survey questions is in [Learning R Internet Survey -
+Question
+Names.tsv](https://github.com/rstudio/learning-r-survey/blob/master/2018/data/Learning%20R%20Internet%20Survey%20-%20Question%20Names.tsv).
+The full text for the 2019 survey questions is in
+[survey-questions-2019-en.csv](https://github.com/rstudio/learning-r-survey/blob/master/2019/data/survey-questions-2019-en.csv).
+
 ## Data Source 2
 ### Kaggle Housing Prices practice competition
 [kaggle.com/c/house-prices-advanced-regression-techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
