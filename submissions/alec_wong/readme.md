@@ -463,7 +463,7 @@ mm_train = mm_data[data$train_test == 1,]
 mm_test  = mm_data[data$train_test == 2,]
 
 # Taken from a different kaggle kernel
-default_param<-list(
+default_param = list(
         objective = "reg:linear",
         booster = "gbtree",
         eta=0.05, #default = 0.3
@@ -479,8 +479,8 @@ XGboost takes a matrix covariate input, so I use `model.matrix` to
 format the input properly.
 
 ``` r
-xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 3, subsample = 1, verbose = 0)
+xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, params = default_param,
+              verbose = 0)
 ```
 
 ``` r
@@ -488,41 +488,36 @@ xgb
 ```
 
     ##### xgb.Booster
-    raw: 322.6 Kb 
+    raw: 304.4 Kb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
         watchlist = watchlist, verbose = verbose, print_every_n = print_every_n, 
         early_stopping_rounds = early_stopping_rounds, maximize = maximize, 
         save_period = save_period, save_name = save_name, xgb_model = xgb_model, 
-        callbacks = callbacks, max_depth = 3, subsample = 1)
+        callbacks = callbacks)
     params (as set within xgb.train):
-      max_depth = "3", subsample = "1", silent = "1"
+      objective = "reg:linear", booster = "gbtree", eta = "0.05", gamma = "0", max_depth = "3", min_child_weight = "4", subsample = "1", colsample_bytree = "1", silent = "1"
     xgb.attributes:
-      best_iteration, best_msg, best_ntreelimit, best_score, niter
+      niter
     callbacks:
       cb.evaluation.log()
-      cb.early.stop(stopping_rounds = early_stopping_rounds, maximize = maximize, 
-        verbose = verbose)
     # of features: 221 
     niter: 500
-    best_iteration : 500 
-    best_ntreelimit : 500 
-    best_score : 1304.997 
     nfeatures : 221 
     evaluation_log:
         iter train_rmse
-           1 143569.141
-           2 104766.320
+           1  189978.33
+           2  181088.41
     ---                
-         499   1310.428
-         500   1304.997
+         499   10075.42
+         500   10058.74
 
 Additionally, run cross-validation to assess out-of-sample measurement
 error.
 
 ``` r
 cv_locs = xgb.cv(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+       params = default_param, nfold = 10, metrics = 'rmse')
 ```
 
 ``` r
@@ -530,42 +525,21 @@ cv_locs
 ```
 
     ##### xgb.cv 10-folds
-     iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
-        1      144339.784      1368.2977      144339.43     11709.392
-        2      105514.420      1358.4320      106092.44     11373.916
-        3       78394.067      1397.5424       79747.56     10873.094
-        4       59272.918      1032.8095       61725.24     10513.452
-        5       45861.793      1007.0082       50629.66     10589.578
-        6       36740.552      1170.7309       43895.39     10703.187
-        7       30385.424      1220.4809       39238.86     10064.152
-        8       25755.501      1166.8715       36786.55      9878.085
-        9       21876.633      1134.7200       34992.44      9828.948
-       10       18984.118       837.4683       33992.11      9625.315
-       11       17074.113       755.4265       33561.38      9499.660
-       12       15555.357       953.1258       33034.36      9787.590
-       13       14259.274       933.9219       33540.33     10055.228
-       14       13132.919      1040.2940       33194.81     10192.514
-       15       12114.239      1075.4550       33154.45     10921.564
-       16       11388.389      1163.2522       32974.46     10957.675
-       17       10581.504      1115.4385       32684.69     10976.951
-       18        9818.824       957.0005       32555.46     11208.387
-       19        9247.094       998.6904       32445.49     11365.839
-       20        8700.407       963.5650       32379.00     11579.029
-       21        8220.268       869.8125       32364.31     11721.073
-       22        7736.533       747.0314       32520.41     11907.275
-       23        7345.992       729.6712       32520.01     11798.504
-       24        6963.522       792.5200       32547.29     11757.938
-       25        6625.602       795.9331       32675.98     11764.950
-       26        6325.999       776.0345       32756.72     11957.871
-       27        5960.328       724.1539       32679.82     11982.124
-       28        5573.125       740.2380       32723.42     12139.431
-       29        5295.644       765.4489       32743.99     12173.555
-       30        4998.000       711.6958       32763.46     12200.112
-       31        4716.977       713.1119       32760.81     12153.934
-     iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
+        iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
+           1       189984.35      1342.7440      189875.09     12316.111
+           2       181090.77      1305.0900      181030.97     12114.884
+           3       172648.02      1261.9029      172585.79     11964.822
+           4       164634.43      1224.2690      164601.39     11713.839
+           5       157020.76      1184.4157      157019.30     11614.956
+    ---                                                                 
+         253        12896.79       345.5219       29112.96      9655.741
+         254        12875.06       351.5855       29125.90      9658.919
+         255        12857.48       350.4368       29122.11      9664.666
+         256        12840.56       356.6583       29125.77      9665.473
+         257        12817.27       351.2105       29112.06      9671.807
     Best iteration:
      iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
-       21        8220.268       869.8125       32364.31      11721.07
+      247        13021.81       353.2953       29108.83      9639.134
 
 Out-of-sample test error:
 
@@ -609,7 +583,8 @@ mm_test  = mm_data[data$train_test == 2,]
 ```
 
 ``` r
-xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, verbose = 0, params = default_param)
+xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, 
+                  verbose = 0, params = default_param)
 ```
 
 ``` r
@@ -639,11 +614,11 @@ xgb_fac
            2 181110.875
     ---                
          499  10006.789
-         500   9994.485
+         500   9994.486
 
 ``` r
 cv_fac = xgb.cv(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+       params = default_param, nfold = 10, metrics = 'rmse')
 ```
 
 ``` r
@@ -651,37 +626,21 @@ cv_fac
 ```
 
     ##### xgb.cv 10-folds
-     iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
-        1      144490.692       1125.492      145127.81      6583.322
-        2      105428.246       1183.518      106782.35      6136.882
-        3       78388.199       1237.987       80836.49      5824.466
-        4       59057.476       1228.399       63121.10      6764.321
-        5       46079.990       1868.557       52253.45      6871.262
-        6       36906.102       2014.247       44800.85      6809.750
-        7       30026.257       2154.867       39924.40      6843.648
-        8       25258.841       2119.219       37436.68      7289.151
-        9       21637.428       1973.670       35809.33      7815.024
-       10       19187.614       2025.596       34779.35      8092.274
-       11       17076.549       1617.090       34487.21      8243.543
-       12       15568.900       1661.381       34204.96      8437.584
-       13       14329.354       1757.867       33718.89      8335.770
-       14       13487.654       1933.332       33658.11      8361.459
-       15       12646.767       2043.739       33552.60      8432.525
-       16       11924.193       2231.809       33194.92      8163.476
-       17       11175.842       2282.863       33265.94      8029.601
-       18       10643.591       2155.032       33488.85      8117.834
-       19        9941.984       1602.091       33287.32      8092.174
-       20        9473.489       1707.525       33262.97      8005.590
-       21        8882.567       1675.484       33299.08      8007.352
-       22        8482.149       1819.149       33254.42      8046.721
-       23        7916.367       1455.444       33384.18      8014.287
-       24        7446.682       1409.786       33473.57      8097.616
-       25        6955.685       1181.266       33549.52      8136.300
-       26        6628.965       1174.193       33510.82      8174.907
-     iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
+        iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
+           1       189993.10       628.9467      189862.03      5566.344
+           2       181112.33       612.1326      181061.00      5411.613
+           3       172682.97       596.0756      172717.14      5299.626
+           4       164670.80       577.4218      164796.35      5256.220
+           5       157069.31       557.8738      157270.61      5081.309
+    ---                                                                 
+         324        11743.67       201.2123       28978.45      7785.230
+         325        11730.42       200.3219       28977.46      7786.013
+         326        11713.72       204.7482       28976.02      7781.878
+         327        11698.44       204.0752       28971.19      7777.175
+         328        11683.55       200.5098       28964.06      7767.884
     Best iteration:
      iter train_rmse_mean train_rmse_std test_rmse_mean test_rmse_std
-       16        11924.19       2231.809       33194.92      8163.476
+      318        11849.18       198.2615       28959.08      7769.454
 
 Out-of-sample test error:
 

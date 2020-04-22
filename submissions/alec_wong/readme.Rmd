@@ -293,7 +293,7 @@ mm_train = mm_data[data$train_test == 1,]
 mm_test  = mm_data[data$train_test == 2,]
 
 # Taken from a different kaggle kernel
-default_param<-list(
+default_param = list(
         objective = "reg:linear",
         booster = "gbtree",
         eta=0.05, #default = 0.3
@@ -309,8 +309,8 @@ XGboost takes a matrix covariate input, so I use `model.matrix` to format the
 input properly.
 
 ```{r model-location, results = 'hide'}
-xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 3, subsample = 1, verbose = 0)
+xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, params = default_param,
+              verbose = 0)
 ```
 ```{r}
 xgb
@@ -321,7 +321,7 @@ Additionally, run cross-validation to assess out-of-sample measurement error.
 
 ```{r, results = 'hide', cache = TRUE}
 cv_locs = xgb.cv(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+       params = default_param, nfold = 10, metrics = 'rmse')
 ```
 ```{r}
 cv_locs
@@ -369,7 +369,8 @@ mm_test  = mm_data[data$train_test == 2,]
 ```
 
 ```{r model-factor, results = 'hide', cache = TRUE}
-xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, verbose = 0, params = default_param)
+xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, 
+                  verbose = 0, params = default_param)
 ```
 
 ```{r}
@@ -379,7 +380,7 @@ xgb_fac
 
 ```{r, results = 'hide', cache = TRUE}
 cv_fac = xgb.cv(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+       params = default_param, nfold = 10, metrics = 'rmse')
 ```
 
 ```{r}
