@@ -369,18 +369,6 @@ ggmap(ames_ia_map) +
   map(.x = n_points, .f = ~geom_text(data = .x , aes(x = mean(X), y = mean(Y), label = .y)))
 ```
 
-    Warning in min(x): no non-missing arguments to min; returning Inf
-
-    Warning in max(x): no non-missing arguments to max; returning -Inf
-
-    Warning in min(x): no non-missing arguments to min; returning Inf
-
-    Warning in max(x): no non-missing arguments to max; returning -Inf
-
-    Warning: Removed 10 rows containing missing values (geom_text).
-    
-    Warning: Removed 10 rows containing missing values (geom_text).
-
 ![](output/figures/unnamed-chunk-7-1.png)<!-- -->
 
 Evidently polygon definitions for the neighborhoods isn’t as easily
@@ -480,7 +468,7 @@ format the input properly.
 
 ``` r
 xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5, verbose = 0)
+              max_depth = 3, subsample = 1, verbose = 0)
 ```
 
 ``` r
@@ -488,15 +476,15 @@ xgb
 ```
 
     ##### xgb.Booster
-    raw: 2.8 Mb 
+    raw: 322.6 Kb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
         watchlist = watchlist, verbose = verbose, print_every_n = print_every_n, 
         early_stopping_rounds = early_stopping_rounds, maximize = maximize, 
         save_period = save_period, save_name = save_name, xgb_model = xgb_model, 
-        callbacks = callbacks, max_depth = 12, subsample = 0.5)
+        callbacks = callbacks, max_depth = 3, subsample = 1)
     params (as set within xgb.train):
-      max_depth = "12", subsample = "0.5", silent = "1"
+      max_depth = "3", subsample = "1", silent = "1"
     xgb.attributes:
       best_iteration, best_msg, best_ntreelimit, best_score, niter
     callbacks:
@@ -504,18 +492,18 @@ xgb
       cb.early.stop(stopping_rounds = early_stopping_rounds, maximize = maximize, 
         verbose = verbose)
     # of features: 221 
-    niter: 411
-    best_iteration : 401 
-    best_ntreelimit : 401 
-    best_score : 0.020105 
+    niter: 500
+    best_iteration : 500 
+    best_ntreelimit : 500 
+    best_score : 1304.997 
     nfeatures : 221 
     evaluation_log:
-        iter   train_rmse
-           1 1.439834e+05
-           2 1.052095e+05
-    ---                  
-         410 2.054600e-02
-         411 2.110200e-02
+        iter train_rmse
+           1 143569.125
+           2 104766.320
+    ---                
+         499   1310.428
+         500   1304.997
 
 Additionally, run cross-validation to assess out-of-sample measurement
 error.
@@ -610,7 +598,7 @@ mm_test  = mm_data[data$train_test == 2,]
 
 ``` r
 xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5, verbose = 0)
+              max_depth = 3, subsample = 1, verbose = 0)
 ```
 
 ``` r
@@ -618,15 +606,15 @@ xgb_fac
 ```
 
     ##### xgb.Booster
-    raw: 2.8 Mb 
+    raw: 321.8 Kb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
         watchlist = watchlist, verbose = verbose, print_every_n = print_every_n, 
         early_stopping_rounds = early_stopping_rounds, maximize = maximize, 
         save_period = save_period, save_name = save_name, xgb_model = xgb_model, 
-        callbacks = callbacks, max_depth = 12, subsample = 0.5)
+        callbacks = callbacks, max_depth = 3, subsample = 1)
     params (as set within xgb.train):
-      max_depth = "12", subsample = "0.5", silent = "1"
+      max_depth = "3", subsample = "1", silent = "1"
     xgb.attributes:
       best_iteration, best_msg, best_ntreelimit, best_score, niter
     callbacks:
@@ -634,18 +622,18 @@ xgb_fac
       cb.early.stop(stopping_rounds = early_stopping_rounds, maximize = maximize, 
         verbose = verbose)
     # of features: 242 
-    niter: 375
-    best_iteration : 365 
-    best_ntreelimit : 365 
-    best_score : 0.018202 
+    niter: 500
+    best_iteration : 500 
+    best_ntreelimit : 500 
+    best_score : 1305.62 
     nfeatures : 242 
     evaluation_log:
-        iter   train_rmse
-           1 1.435801e+05
-           2 1.054085e+05
-    ---                  
-         374 1.851700e-02
-         375 1.854300e-02
+        iter train_rmse
+           1 143593.875
+           2 104808.289
+    ---                
+         499   1308.033
+         500   1305.620
 
 ``` r
 cv_fac = xgb.cv(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,

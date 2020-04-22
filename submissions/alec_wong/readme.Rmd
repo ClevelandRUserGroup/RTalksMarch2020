@@ -206,8 +206,7 @@ We're using the `sf` package for the "Simple Features" geometries, using
 [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
 values.
 
-```{r}
-
+```{r, warning = FALSE}
 # Get the neighborhood bounding box points for mapping
 n_points = map2(.x = neigh_bb,
                 .y = neighborhoods$neighborhood[!neigh_bb_errors],
@@ -297,9 +296,9 @@ mm_test  = mm_data[data$train_test == 2,]
 XGboost takes a matrix covariate input, so I use `model.matrix` to format the
 input properly.
 
-```{r model-location, results = 'hide', cache = TRUE}
+```{r model-location, results = 'hide'}
 xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5, verbose = 0)
+              max_depth = 3, subsample = 1, verbose = 0)
 ```
 ```{r}
 xgb
@@ -359,7 +358,7 @@ mm_test  = mm_data[data$train_test == 2,]
 
 ```{r model-factor, results = 'hide', cache = TRUE}
 xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5, verbose = 0)
+              max_depth = 3, subsample = 1, verbose = 0)
 ```
 
 ```{r}
