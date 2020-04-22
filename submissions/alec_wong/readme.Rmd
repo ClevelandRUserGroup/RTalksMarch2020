@@ -387,7 +387,7 @@ train_data_fac$resid_fac = resid
 
 predict_test = predict(xgb_fac, mm_test)
 resid_test = predict_test - test_data_fac$SalePrice
-test_data_fac$resid_fac
+test_data_fac$resid_test
 # RMSE
 rmse = mean(sqrt(resid_test^2))
 

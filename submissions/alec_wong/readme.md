@@ -489,6 +489,7 @@ xgb
 ```
 
     ##### xgb.Booster
+    Handle is invalid! Suggest using xgb.Booster.complete
     raw: 2.7 Mb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
@@ -498,8 +499,6 @@ xgb
         callbacks = callbacks, max_depth = 12, subsample = 0.5)
     params (as set within xgb.train):
       max_depth = "12", subsample = "0.5", silent = "1"
-    xgb.attributes:
-      best_iteration, best_msg, best_ntreelimit, best_score, niter
     callbacks:
       cb.print.evaluation(period = print_every_n)
       cb.evaluation.log()
@@ -620,6 +619,7 @@ xgb_fac
 ```
 
     ##### xgb.Booster
+    Handle is invalid! Suggest using xgb.Booster.complete
     raw: 2.8 Mb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
@@ -629,8 +629,6 @@ xgb_fac
         callbacks = callbacks, max_depth = 12, subsample = 0.5)
     params (as set within xgb.train):
       max_depth = "12", subsample = "0.5", silent = "1"
-    xgb.attributes:
-      best_iteration, best_msg, best_ntreelimit, best_score, niter
     callbacks:
       cb.print.evaluation(period = print_every_n)
       cb.evaluation.log()
@@ -701,10 +699,10 @@ train_data_fac$resid_fac = resid
 
 predict_test = predict(xgb_fac, mm_test)
 resid_test = predict_test - test_data_fac$SalePrice
-test_data_fac$resid_fac
+test_data_fac$resid_test
 ```
 
-    Warning: Unknown or uninitialised column: `resid_fac`.
+    Warning: Unknown or uninitialised column: `resid_test`.
 
     NULL
 
@@ -761,16 +759,16 @@ loaded via a namespace (and not attached):
 [13] withr_2.1.2         DBI_1.1.0           sp_1.4-1           
 [16] plyr_1.8.6          jpeg_0.1-8.1        lifecycle_0.2.0    
 [19] stringr_1.4.0       munsell_0.5.0       gtable_0.3.0       
-[22] RgoogleMaps_1.4.5.3 codetools_0.2-16    evaluate_0.14      
-[25] labeling_0.3        knitr_1.28          curl_4.3           
-[28] class_7.3-15        fansi_0.4.1         Rcpp_1.0.3         
-[31] KernSmooth_2.23-16  scales_1.1.0        classInt_0.4-3     
-[34] farver_2.0.3        rjson_0.2.20        hms_0.5.3          
-[37] png_0.1-7           digest_0.6.25       stringi_1.4.6      
-[40] grid_3.6.3          cli_2.0.2           tools_3.6.3        
-[43] bitops_1.0-6        magrittr_1.5        tibble_3.0.0       
-[46] tidyr_1.0.2         crayon_1.3.4        pkgconfig_2.0.3    
-[49] ellipsis_0.3.0      Matrix_1.2-18       assertthat_0.2.1   
-[52] rmarkdown_2.1       httr_1.4.1          R6_2.4.1           
-[55] units_0.6-6         compiler_3.6.3     
+[22] RgoogleMaps_1.4.5.3 evaluate_0.14       labeling_0.3       
+[25] knitr_1.28          curl_4.3            class_7.3-15       
+[28] fansi_0.4.1         Rcpp_1.0.3          KernSmooth_2.23-16 
+[31] scales_1.1.0        classInt_0.4-3      farver_2.0.3       
+[34] rjson_0.2.20        hms_0.5.3           png_0.1-7          
+[37] digest_0.6.25       stringi_1.4.6       grid_3.6.3         
+[40] cli_2.0.2           tools_3.6.3         bitops_1.0-6       
+[43] magrittr_1.5        tibble_3.0.0        tidyr_1.0.2        
+[46] crayon_1.3.4        pkgconfig_2.0.3     ellipsis_0.3.0     
+[49] Matrix_1.2-18       assertthat_0.2.1    rmarkdown_2.1      
+[52] httr_1.4.1          R6_2.4.1            units_0.6-6        
+[55] compiler_3.6.3     
 ```
