@@ -23,8 +23,12 @@ data = load_data()
 # The test dataset has no SalePrice to work with; omit these
 data = data %>% filter(train_test == 1)
 
-knitr::opts_chunk$set(comment = NA, fig.path = 'output/figures/')
-knitr::opts_knit$set()
+knitr::opts_chunk$set(comment = NA, 
+                      fig.path = 'output/figures/', 
+                      fig.width = 10, 
+                      fig.height = 5, 
+                      dpi = 300, 
+                      dev.args = list(type = "cairo"))
 ```
 
 # Housing data
