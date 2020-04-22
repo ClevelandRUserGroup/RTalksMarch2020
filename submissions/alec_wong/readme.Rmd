@@ -85,3 +85,9 @@ data %>%
   scale_y_continuous(labels = scales::dollar, breaks = seq(0, 1e6, by = 1e5))
 ```
 
+
+---
+
+```{r}
+sessionInfo()
+```

@@ -115,3 +115,46 @@ data %>%
 ```
 
 ![](output/figures/unnamed-chunk-2-1.png)<!-- -->
+
+-----
+
+``` r
+sessionInfo()
+```
+
+``` 
+R version 3.6.3 (2020-02-29)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 18363)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] xgboost_1.0.0.2   ggrepel_0.8.2     ggplot2_3.3.0     sf_0.9-2         
+ [5] xml2_1.3.1        mapsapi_0.4.5     purrr_0.3.3       readr_1.3.1      
+ [9] data.table_1.12.8 dplyr_0.8.5      
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.3         pillar_1.4.3       compiler_3.6.3     bitops_1.0-6      
+ [5] class_7.3-15       tools_3.6.3        digest_0.6.25      lattice_0.20-38   
+ [9] gtable_0.3.0       evaluate_0.14      lifecycle_0.2.0    tibble_3.0.0      
+[13] pkgconfig_2.0.3    rlang_0.4.5        Matrix_1.2-18      cli_2.0.2         
+[17] DBI_1.1.0          yaml_2.2.1         xfun_0.12          e1071_1.7-3       
+[21] withr_2.1.2        stringr_1.4.0      knitr_1.28         vctrs_0.2.4       
+[25] hms_0.5.3          classInt_0.4-3     grid_3.6.3         tidyselect_1.0.0  
+[29] glue_1.3.2         R6_2.4.1           fansi_0.4.1        rmarkdown_2.1     
+[33] farver_2.0.3       magrittr_1.5       scales_1.1.0       units_0.6-6       
+[37] ellipsis_0.3.0     htmltools_0.4.0    assertthat_0.2.1   colorspace_1.4-1  
+[41] utf8_1.1.4         KernSmooth_2.23-16 stringi_1.4.6      munsell_0.5.0     
+[45] crayon_1.3.4      
+```
