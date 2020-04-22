@@ -29,18 +29,30 @@ knitr::opts_knit$set()
 
 # Housing data
 
+The data are sourced from the Kaggle competition found here: https://www.kaggle.com/c/house-prices-advanced-regression-techniques
+
+I used the Kaggle API to download the data:
+
+```
+kaggle competitions download -c house-prices-advanced-regression-techniques
+```
+
+The `data_description.txt` file contains all the relevant metadata on the
+dataset.
+
 Among the many variables included in the dataset here, the `Neighborhoods`
 variable caught my eye. It was clear from the `data_description.txt` file that
-the neighborhoods were located in Ames, Iowa. The objective became:
+the neighborhoods were located in Ames, Iowa. The objective of this short
+exploration became:
 
-* Geocode the neighborhoods as a bit of feature engineering.
-* See if including the neighborhood spatial information improves prediction any.
+* Geocode the neighborhoods.
+* See if including the neighborhood spatial information improves prediction.
 
 ## Neighborhood values
 
 The neighborhood values take on the following, as described in the
-`data_description.txt` file. It was tab-delimited already, so I extracted it
-into its own `.tsv` file.
+`data_description.txt` file. It was tab-delimited already within the text file,
+so I extracted it into its own `.tsv` file.
 
 ```{r}
 neighborhoods = readr::read_delim(file = 'data/neighborhoods_match.tsv', 
@@ -49,13 +61,23 @@ neighborhoods = readr::read_delim(file = 'data/neighborhoods_match.tsv',
                                   col_types = cols(col_character(), col_character())
 )
 
-neighborhoods
+neighborhoods %>% print(n = 100)
 ```
+
+There are 25 neighborhoods, and after entering some of these by hand, most of
+these have some definition using the
+[Google Maps Geocoding API](https://developers.google.com/maps/documentation/geocoding/intro).
+
+The neighborhoods have some moderate correlation with housing cost, and
+intuitively one would assume that neighborhoods closer together might covary
+more than neighborhoods farther apart.
 
 ```{r}
 data %>% 
   ggplot() + 
   geom_boxplot(aes(x = Neighborhood, y = SalePrice)) + 
   theme_bw() + 
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+  scale_x_discrete(guide = guide_axis(n.dodge = 3)) + 
+  scale_y_continuous(labels = scales::dollar, breaks = seq(0, 1e6, by = 1e5))
 ```
+
