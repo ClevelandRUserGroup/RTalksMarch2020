@@ -50,10 +50,10 @@ file(s)), you will need to submit the finished product to display
 (recommendations below).
 
 If you are comfortable with Git and GitHub, please submit a Pull Request to this
-repository with your contribution. Commit all your contributions to a directory
-titled with your last name followed by your first name, e.g.
-`LastnameFirstname`. Please do not let the complexity of Git/GitHub discourage
-you from contributing a lightning talk. Feel free to email
+repository with your contribution. Commit all your contributions in the
+`submissions` directory in a subdirectory titled with your first and last name,
+e.g. `firstname_lastname`. Please do not let the complexity of Git/GitHub
+discourage you from contributing a lightning talk. Feel free to email
 [Tim](mailto:tim@hoolihan.net) with your contribution, and he will add it to the
 repository.
 

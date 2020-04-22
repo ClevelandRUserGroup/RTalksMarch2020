@@ -1,0 +1,304 @@
+---
+title: "How does first programming language affect ability to learn R?"
+author: "John Blischak"
+date: "2020-04-21"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.width = 10)
+```
+
+```{r packages}
+library(tidyverse)
+theme_set(theme_classic(base_size = 18))
+```
+
+```{r import}
+survey_url <- "https://raw.githubusercontent.com/rstudio/learning-r-survey/master/2018/data/survey_English.tsv"
+survey <- read_delim(survey_url, delim = "\t")
+```
+
+The data comes from [RStudio's 2018 survey on learning
+R](https://github.com/rstudio/learning-r-survey). The raw data includes
+responses from `r nrow(survey)` participants.
+
+```{r first-language, results='hide'}
+sum(is.na(survey$Qfirst_language))
+survey <- drop_na(survey, Qfirst_language)
+r <- grep("^R$", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+first_r <- survey$Qfirst_language %in% r
+sum(first_r)
+
+gui <- c(
+  grep("Excel", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("Minitab", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("SPSS", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("Tableau", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+first_gui <- survey$Qfirst_language %in% gui
+sum(first_gui)
+
+basic <- grep("basic", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+sort(table(basic), decreasing = TRUE)[1:5]
+first_basic <- survey$Qfirst_language %in% basic
+sum(first_basic)
+
+data_centric <- c(
+  grep("maple", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("mathematica", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("matlab", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("SAS", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("Stata", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("Lisrel", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(data_centric), decreasing = TRUE)[1:5]
+first_data_centric <- survey$Qfirst_language %in% data_centric
+sum(first_data_centric)
+
+scripting <- c(
+  grep("perl", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("php", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("python", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("ruby", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(scripting), decreasing = TRUE)[1:4]
+first_scripting <- survey$Qfirst_language %in% scripting
+sum(first_scripting)
+
+lisp <- c(
+  grep("lisp", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("scheme", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("racket", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(lisp), decreasing = TRUE)[1:5]
+first_lisp <- survey$Qfirst_language %in% lisp
+sum(first_lisp)
+
+c_plus_plus <- c(
+  grep("C\\+\\+", survey$Qfirst_language, ignore.case = TRUE, value = TRUE),
+  grep("^C$", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(c_plus_plus), decreasing = TRUE)
+first_c_plus_plus <- survey$Qfirst_language %in% c_plus_plus
+sum(first_c_plus_plus)
+
+java <- c(
+  grep("^java$", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(java), decreasing = TRUE)
+first_java <- survey$Qfirst_language %in% java
+sum(first_java)
+
+fortran <- c(
+  grep("fortran", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(fortran), decreasing = TRUE)[1:5]
+first_fortran <- survey$Qfirst_language %in% fortran
+sum(first_fortran)
+
+pascal <- c(
+  grep("pascal", survey$Qfirst_language, ignore.case = TRUE, value = TRUE)
+)
+sort(table(pascal), decreasing = TRUE)[1:5]
+first_pascal <- survey$Qfirst_language %in% pascal
+sum(first_pascal)
+
+survey$first_lang <- dplyr::case_when(
+  first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "BASIC",
+  !first_basic & first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "C/C++",
+  !first_basic & !first_c_plus_plus & first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "Data-centric",
+  !first_basic & !first_c_plus_plus & !first_data_centric & first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "Fortran",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    first_gui & !first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "GUI",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & first_java & !first_lisp & !first_pascal & !first_r & !first_scripting ~ "Java",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & first_lisp & !first_pascal & !first_r & !first_scripting ~ "Lisp",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & first_pascal & !first_r & !first_scripting ~ "Pascal",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & first_r & !first_scripting ~ "R",
+  !first_basic & !first_c_plus_plus & !first_data_centric & !first_fortran &
+    !first_gui & !first_java & !first_lisp & !first_pascal & !first_r & first_scripting ~ "Scripting"
+)
+table(survey$first_lang, useNA = "ifany")
+survey <- drop_na(survey, first_lang)
+nrow(survey)
+```
+
+```{r wrangling}
+survey <- survey %>%
+  drop_na(
+    Qr_year,
+    Qyear_born,
+    Qr_experience,
+    Qtime_to_proficiency,
+    Qr_enjoyment,
+    Qr_difficulty_experienced,
+    Qrecommend
+  ) %>%
+  filter(
+    # S was released in 1976
+    Qr_year >= 1976, 
+    Qr_year <= 2018,
+    Qyear_born >= 1900,
+    Qyear_born <= 2000,
+    # Have to have some experience with R
+    Qr_experience != "None"
+  ) %>%
+  mutate(
+    Qr_experience = factor(Qr_experience,
+                           levels = c("Beginner", "Intermediate", "Expert")),
+    Qtime_to_proficiency = factor(Qtime_to_proficiency,
+                                  levels = c("I don't feel proficient in R yet.",
+                                             "Days", "Weeks", "Months", "Years"))
+  )
+```
+
+I focused on the data of [reported first language
+learned](https://github.com/rstudio/learning-r-survey/blob/master/2018/dictionary/first-language-dictionary.tsv).
+Specifically, I was interested to see if there was any evidence that prior
+exposure to specific programming paradigms influenced the ability to learn R.
+After applying quality filters and only keeping participants that could be
+assigned to a large enough group of first programming language, I was left with
+`r nrow(survey)` participants.
+
+**Disclaimers:**
+
+* I'm a geneticist. Don't take any of this too seriously.
+
+* The study authors themselves warn of the incredible sampling bias. And as you
+will see from the results below, the participants are satisfied R users.
+
+## First programming language
+
+```{r first-lang}
+survey %>%
+  ggplot() +
+  aes(x = first_lang) +
+  geom_bar() +
+  labs(x = "First programming language",
+       y = "Number of participants")
+```
+
+## Demographics
+
+But isn't first programming language going to be super confounded with age and
+experience? Surprisingly, not as much as I had expected.
+
+While Fortran-first programmers tend to be older, the remaining categories are
+comparable.
+
+```{r age}
+survey %>%
+  mutate(age = 2018 - Qyear_born) %>%
+  ggplot() +
+  aes(x = first_lang, y = age) +
+  geom_boxplot() +
+  labs(x = "First programming language",
+       y = "Age")
+```
+
+Looking at years of R usage, Fortran-first users had more experience as
+expected. But Lisp-first programmers had the highest median years of R usage.
+
+```{r r-usage}
+survey %>%
+  mutate(r_years = 2018 - Qr_year) %>%
+  ggplot() +
+  aes(x = first_lang, y = r_years) +
+  geom_boxplot() +
+  labs(x = "First programming language",
+       y = "Age")
+```
+
+And for self-reported R experience, the main outlier are those whose first
+programming environment was a GUI (e.g. Excel, SPSS), with a larger percentage
+of self-reported beginners.
+
+```{r r-experience}
+survey %>%
+  group_by(first_lang) %>%
+  count(Qr_experience) %>%
+  mutate(perc = n / sum(n)) %>%
+  ggplot() +
+  aes(x = first_lang, y = perc, fill = Qr_experience) +
+  geom_col() +
+  scale_fill_brewer("R experience", palette = "Dark2") +
+  theme(legend.position = "top") +
+  labs(x = "First programming language",
+       y = "Percentage")
+```
+
+## Roughly how long did it take you to achieve proficiency in R?
+
+No super clear advantage for time to proficiency.
+
+```{r time-to-proficiency}
+survey %>%
+  group_by(first_lang) %>%
+  count(Qtime_to_proficiency) %>%
+  mutate(perc = n / sum(n)) %>%
+ggplot() +
+  aes(x = first_lang, y = perc, fill = Qtime_to_proficiency) +
+  geom_col() +
+  scale_fill_brewer("Time to proficiency", palette = "Dark2") +
+  theme(legend.position = "top") +
+  labs(x = "First programming language",
+       y = "Percentage")
+```
+
+## Please rate how much you enjoy using R on a scale of 1 to 5, where 1 is you don't enjoy it at all, and 5 is that you enjoy it a great deal.
+
+Everybody loves R.
+
+```{r enjoy}
+survey %>%
+  ggplot() +
+  aes(x = first_lang, y = Qr_enjoyment) +
+  geom_boxplot() +
+  labs(x = "First programming language",
+       y = "Enjoyment (1 - 5)")
+```
+
+## Compared with other technical topics you've learned in school and on the job, on a scale of 1 to 5, how difficult has it been for you to learn R?
+
+GUI-first and R-first participants find it most difficult to learn R. Lisp-first
+had the easiest time (though note they were the smallest sample). So really
+learning any programming language appears to help with learning R.
+
+```{r difficulty}
+survey %>%
+  ggplot() +
+  aes(x = first_lang, y = Qr_difficulty_experienced) +
+  geom_boxplot() +
+  labs(x = "First programming language",
+       y = "Difficulty (1 - 5)")
+```
+
+## How likely are you to recommend R to a colleague, friend, or family member?
+
+Most participants highly recommend R. Especially the Lisp-first participants.
+And the Scripting-first participants had the largest number of lower likeliness
+to recommend R, but this group includes Python, so maybe that is to be expected?
+:-)
+
+```{r recommend}
+survey %>%
+  ggplot() +
+  aes(x = first_lang, y = Qrecommend) +
+  geom_boxplot() +
+  labs(x = "First programming language",
+       y = "Difficulty (1 - 10)")
+```
+
+## Session information
+
+```{r session-info}
+sessionInfo()
+```
