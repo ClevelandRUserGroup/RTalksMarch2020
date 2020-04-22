@@ -4,7 +4,7 @@ author: Alec Wong
 title: Housing data mini-analysis
 ---
 
-```{r setup, include=FALSE}
+```{r setup, warning=FALSE, message=FALSE}
 library(dplyr)
 library(data.table)
 library(readr)

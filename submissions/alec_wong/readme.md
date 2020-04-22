@@ -2,6 +2,33 @@ Housing data mini-analysis
 ================
 Alec Wong
 
+``` r
+library(dplyr)
+library(data.table)
+library(readr)
+library(purrr)
+library(mapsapi)
+library(xml2)
+library(sf)
+library(ggrepel)
+library(xgboost)
+
+source("R/load_all_data.R")
+source("R/modeling_functions.R")
+
+data = load_data()
+
+# The test dataset has no SalePrice to work with; omit these
+data = data %>% filter(train_test == 1)
+
+knitr::opts_chunk$set(comment = NA, 
+                      fig.path = 'output/figures/', 
+                      fig.width = 10, 
+                      fig.height = 5, 
+                      dpi = 300, 
+                      dev.args = list(type = "cairo"))
+```
+
 # Housing data
 
 The data are sourced from the Kaggle competition found here:
