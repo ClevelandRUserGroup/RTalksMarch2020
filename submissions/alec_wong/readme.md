@@ -116,6 +116,48 @@ data %>%
 
 ![](output/figures/unnamed-chunk-2-1.png)<!-- -->
 
+While I noticed this later on, one of the neighborhood values actually
+doesn’t align with the description data *exactly*; the casing is
+different:
+
+``` r
+setdiff(data$Neighborhood, neighborhoods$abbreviation)
+```
+
+    [1] "NAmes"
+
+``` r
+setdiff(neighborhoods$abbreviation, data$Neighborhood)
+```
+
+    [1] "Names"
+
+Of course the name is artificial anyway, but for matching purposes later
+on, I just `tolower` all the neighborhood references.
+
+``` r
+neighborhoods$abbreviation = tolower(neighborhoods$abbreviation)
+data$Neighborhood = tolower(data$Neighborhood)
+```
+
+Additionally, two of the neighborhood locations don’t have any suitable
+geocoded location from Google Maps, which puts them in Seattle; these
+are the `swisu`, or `South & West of Iowa State University`, and
+`npkvill`, or `Northpark Villa` locations. The first, `swisu`, I impute
+instead simply Iowa State University as a stop-gap, since “south and
+west” of it isn’t much more informative.
+
+## Geocoding the neighborhoods
+
+I make use of Google’s Geocode API and the corresponding package
+`mapsapi` to interface with it through R.
+
+``` r
+api_key = Sys.getenv("gmaps_api_key")
+```
+
+    ames, iowa..............................OK
+
 -----
 
 ``` r
@@ -149,12 +191,12 @@ loaded via a namespace (and not attached):
  [5] class_7.3-15       tools_3.6.3        digest_0.6.25      lattice_0.20-38   
  [9] gtable_0.3.0       evaluate_0.14      lifecycle_0.2.0    tibble_3.0.0      
 [13] pkgconfig_2.0.3    rlang_0.4.5        Matrix_1.2-18      cli_2.0.2         
-[17] DBI_1.1.0          yaml_2.2.1         xfun_0.12          e1071_1.7-3       
-[21] withr_2.1.2        stringr_1.4.0      knitr_1.28         vctrs_0.2.4       
-[25] hms_0.5.3          classInt_0.4-3     grid_3.6.3         tidyselect_1.0.0  
-[29] glue_1.3.2         R6_2.4.1           fansi_0.4.1        rmarkdown_2.1     
-[33] farver_2.0.3       magrittr_1.5       scales_1.1.0       units_0.6-6       
-[37] ellipsis_0.3.0     htmltools_0.4.0    assertthat_0.2.1   colorspace_1.4-1  
-[41] utf8_1.1.4         KernSmooth_2.23-16 stringi_1.4.6      munsell_0.5.0     
-[45] crayon_1.3.4      
+[17] DBI_1.1.0          curl_4.3           yaml_2.2.1         xfun_0.12         
+[21] e1071_1.7-3        withr_2.1.2        stringr_1.4.0      knitr_1.28        
+[25] vctrs_0.2.4        hms_0.5.3          classInt_0.4-3     grid_3.6.3        
+[29] tidyselect_1.0.0   glue_1.3.2         R6_2.4.1           fansi_0.4.1       
+[33] rmarkdown_2.1      farver_2.0.3       magrittr_1.5       scales_1.1.0      
+[37] units_0.6-6        ellipsis_0.3.0     htmltools_0.4.0    assertthat_0.2.1  
+[41] colorspace_1.4-1   utf8_1.1.4         KernSmooth_2.23-16 stringi_1.4.6     
+[45] munsell_0.5.0      crayon_1.3.4      
 ```
