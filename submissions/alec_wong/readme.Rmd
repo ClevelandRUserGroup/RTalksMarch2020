@@ -299,7 +299,7 @@ input properly.
 
 ```{r model-location, results = 'hide', cache = TRUE}
 xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5)
+              max_depth = 12, subsample = 0.5, verbose = 0)
 ```
 ```{r}
 xgb
@@ -359,7 +359,7 @@ mm_test  = mm_data[data$train_test == 2,]
 
 ```{r model-factor, results = 'hide', cache = TRUE}
 xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 12, subsample = 0.5)
+              max_depth = 12, subsample = 0.5, verbose = 0)
 ```
 
 ```{r}
