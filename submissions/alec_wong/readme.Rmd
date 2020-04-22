@@ -14,6 +14,8 @@ library(xml2)
 library(sf)
 library(ggrepel)
 library(xgboost)
+library(ggmap)
+library(memoise)
 
 source("R/load_all_data.R")
 source("R/modeling_functions.R")
@@ -105,9 +107,12 @@ Additionally, two of the neighborhood locations don't have any suitable geocoded
 location from Google Maps, which puts them in Seattle; these are the `swisu`, or
 `South & West of Iowa State University`, and `npkvill`, or `Northpark Villa`
 locations. The first, `swisu`, I impute instead simply Iowa State University as
-a stop-gap, since "south and west" of it isn't much more informative.
+a stop-gap, since "south and west" of it isn't much more informative. The
+`Northpark Villa` is more of an anomaly, as searching "Northpark" in Google Maps
+doesn't turn anything up in the relatively small town of Ames. I end up omitting
+these records for this exercise.
 
-## Geocoding the neighborhoods
+## Testing out the Geocoding API
 
 I make use of Google's Geocode API and the corresponding package `mapsapi` to
 interface with it through R.
@@ -116,10 +121,70 @@ interface with it through R.
 api_key = Sys.getenv("gmaps_api_key")
 ```
 
+I can obtain a bounding box for Ames, Iowa, and with `ggmap`, plot it. Before I
+do, I want to memoise the `mp_geocode` function, which stores the results in
+cache in memory and accesses those saved values for any function calls with
+duplicate arguments. This will avoid unnecessary calls to the API as I develop.
 
-```{r geocode-ames, echo = FALSE}
-ames_bb = mp_geocode("ames, iowa", key = api_key)
+```{r memoize-geocode}
+mm_mp_geocode = memoise::memoise(f = function(address, key){mp_geocode(address, key = api_key)})
 ```
+
+What returns is essentially an XML response with some metadata and location
+information, as well as return status.
+
+```{r geocode-ames, cache = TRUE}
+ames_bb = mm_mp_geocode("ames, iowa", key = api_key)
+ames_bb
+```
+
+`mapsapi` interacts with this XML response directly, and we can get points, polygons, and boundaries from the response.
+
+```{r plot-ames-map, cache = TRUE}
+ames_poly = mp_get_bounds(ames_bb)
+ames_pt   = mp_get_points(ames_bb)
+ggmap::register_google(key = api_key)
+ames_ia_map = suppressMessages(ggmap::get_map(location = sf::st_coordinates(ames_pt), zoom = 12, source = 'google', messaging = FALSE)) 
+
+ggmap(ggmap = ames_ia_map) + 
+  geom_polygon(data = ames_poly %>% st_coordinates() %>% as.data.frame, aes(x = X, y = Y),
+               fill = NA, color = 'red4')
+```
+
+Great.
+
+## Geocoding the neighborhoods
+
+To input the neighborhoods into the Geocoding API, I can't just give it the
+names; I will need to give "Ames, Iowa" as context so that it doesn't get data
+from just any location. I make a new column in the `neighborhoods` data to
+search with, by appending "Ames, Iowa" to the neighborhood name. Also, as
+mentioned before, `swisu` and `npkvill` don't really have good matches, so I
+modify those appropriately.
+
+```{r format-neigh-search}
+# the search column will be use for the 'address' argument in mp_geocode
+neighborhoods$search = stringr::str_c(neighborhoods$neighborhood, ", Ames Iowa")
+
+# `South and West of Iowa State University` is no good, so I impute just the university name
+neighborhoods = neighborhoods %>%
+  mutate(search = case_when(
+    abbreviation == 'swisu' ~ "Iowa State University",
+    TRUE ~ search
+  )) %>% 
+  filter(abbreviation != "npkvill")
+
+neighborhoods$search
+
+```
+
+I'm ready to plug each of these addresses into the `mp_geocode` function, or
+rather our memoised version of it.
+
+```{r geocode-neighbors, cache = TRUE}
+neigh_geocode = mm_mp_geocode(address = neighborhoods$search, key = api_key)
+```
+
 
 ---
 
