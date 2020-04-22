@@ -461,6 +461,18 @@ mm_data = model.matrix(SalePrice~ -1 + ., data = data %>%
                          select(-Neighborhood, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC))
 mm_train = mm_data[data$train_test == 1,]
 mm_test  = mm_data[data$train_test == 2,]
+
+# Taken from a different kaggle kernel
+default_param<-list(
+        objective = "reg:linear",
+        booster = "gbtree",
+        eta=0.05, #default = 0.3
+        gamma=0,
+        max_depth=3, #default=6
+        min_child_weight=4, #default=1
+        subsample=1,
+        colsample_bytree=1
+)
 ```
 
 XGboost takes a matrix covariate input, so I use `model.matrix` to
@@ -499,7 +511,7 @@ xgb
     nfeatures : 221 
     evaluation_log:
         iter train_rmse
-           1 143569.125
+           1 143569.141
            2 104766.320
     ---                
          499   1310.428
@@ -597,8 +609,7 @@ mm_test  = mm_data[data$train_test == 2,]
 ```
 
 ``` r
-xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
-              max_depth = 3, subsample = 1, verbose = 0)
+xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, verbose = 0, params = default_param)
 ```
 
 ``` r
@@ -606,34 +617,29 @@ xgb_fac
 ```
 
     ##### xgb.Booster
-    raw: 321.8 Kb 
+    raw: 302.9 Kb 
     call:
       xgb.train(params = params, data = dtrain, nrounds = nrounds, 
         watchlist = watchlist, verbose = verbose, print_every_n = print_every_n, 
         early_stopping_rounds = early_stopping_rounds, maximize = maximize, 
         save_period = save_period, save_name = save_name, xgb_model = xgb_model, 
-        callbacks = callbacks, max_depth = 3, subsample = 1)
+        callbacks = callbacks)
     params (as set within xgb.train):
-      max_depth = "3", subsample = "1", silent = "1"
+      objective = "reg:linear", booster = "gbtree", eta = "0.05", gamma = "0", max_depth = "3", min_child_weight = "4", subsample = "1", colsample_bytree = "1", silent = "1"
     xgb.attributes:
-      best_iteration, best_msg, best_ntreelimit, best_score, niter
+      niter
     callbacks:
       cb.evaluation.log()
-      cb.early.stop(stopping_rounds = early_stopping_rounds, maximize = maximize, 
-        verbose = verbose)
     # of features: 242 
     niter: 500
-    best_iteration : 500 
-    best_ntreelimit : 500 
-    best_score : 1305.62 
     nfeatures : 242 
     evaluation_log:
         iter train_rmse
-           1 143593.875
-           2 104808.289
+           1 189989.953
+           2 181110.875
     ---                
-         499   1308.033
-         500   1305.620
+         499  10006.789
+         500   9994.485
 
 ``` r
 cv_fac = xgb.cv(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
@@ -701,7 +707,8 @@ title(main = paste0("RMSE: ", scales::dollar(rmse)))
 
 This turned out to be mostly an exercise in geocoding and formatting
 spatial data; it doesn’t appear that geocoding the locations actually
-reduces prediction error by a large margin.
+reduces prediction error by a large margin, in fact sometimes it
+degrades it.
 
 -----
 
