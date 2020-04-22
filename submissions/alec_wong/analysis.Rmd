@@ -1,0 +1,61 @@
+---
+output: md_document
+author: Alec Wong
+title: Housing data mini-analysis
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(data.table)
+library(readr)
+library(purrr)
+library(mapsapi)
+library(xml2)
+library(sf)
+library(ggrepel)
+library(xgboost)
+
+source("R/load_all_data.R")
+source("R/modeling_functions.R")
+
+data = load_data()
+
+# The test dataset has no SalePrice to work with; omit these
+data = data %>% filter(train_test == 1)
+
+knitr::opts_chunk$set(comment = NA, fig.path = 'output/figures/')
+knitr::opts_knit$set()
+```
+
+# Housing data
+
+Among the many variables included in the dataset here, the `Neighborhoods`
+variable caught my eye. It was clear from the `data_description.txt` file that
+the neighborhoods were located in Ames, Iowa. The objective became:
+
+* Geocode the neighborhoods as a bit of feature engineering.
+* See if including the neighborhood spatial information improves prediction any.
+
+## Neighborhood values
+
+The neighborhood values take on the following, as described in the
+`data_description.txt` file. It was tab-delimited already, so I extracted it
+into its own `.tsv` file.
+
+```{r}
+neighborhoods = readr::read_delim(file = 'data/neighborhoods_match.tsv', 
+                                  delim = '\t', 
+                                  col_names = c("abbreviation", "neighborhood"),
+                                  col_types = cols(col_character(), col_character())
+)
+
+neighborhoods
+```
+
+```{r}
+data %>% 
+  ggplot() + 
+  geom_boxplot(aes(x = Neighborhood, y = SalePrice)) + 
+  theme_bw() + 
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+```
