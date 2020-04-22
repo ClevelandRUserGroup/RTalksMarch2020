@@ -65,8 +65,8 @@ neighborhoods = cbind(neighborhoods, neigh_cent_df$pnt, st_coordinates(neigh_cen
 # neigh_bb = neigh_geocode %>% map(.f = ~try(mp_get_bounds(.x)))
 # neigh_bb_errors = neigh_bb %>% map_lgl(.f = ~inherits(.x, "try-error"))
 # neigh_bb = neigh_bb[!neigh_bb_errors]
-# ames_pt = ames_bb %>% mp_get_points()
-# ggmap::register_google(key = api_key)
+ames_pt = ames_bb %>% mp_get_points()
+ggmap::register_google(key = api_key)
 ames_ia_map = ggmap::get_map(location = sf::st_coordinates(ames_pt), zoom = 12, source = 'google')
 # n_points = map2(.x = neigh_bb, .y = neighborhoods$neighborhood[!neigh_bb_errors], .f = ~sf::st_coordinates(.x) %>% as.data.frame %>% cbind(.y, .))
 # names(n_points) = neighborhoods$neighborhood[!neigh_bb_errors]
