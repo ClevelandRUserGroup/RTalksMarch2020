@@ -25,11 +25,11 @@ data = load_data()
 # The test dataset has no SalePrice to work with; omit these
 data = data %>% filter(train_test == 1)
 
-knitr::opts_chunk$set(comment = NA, 
-                      fig.path = 'output/figures/', 
-                      fig.width = 10, 
-                      fig.height = 5, 
-                      dpi = 300, 
+knitr::opts_chunk$set(comment = NA,
+                      fig.path = 'output/figures/',
+                      fig.width = 10,
+                      fig.height = 5,
+                      dpi = 300,
                       dev.args = list(type = "cairo"))
 ```
 
@@ -61,8 +61,8 @@ The neighborhood values take on the following, as described in the
 so I extracted it into its own `.tsv` file.
 
 ```{r}
-neighborhoods = readr::read_delim(file = 'data/neighborhoods_match.tsv', 
-                                  delim = '\t', 
+neighborhoods = readr::read_delim(file = 'data/neighborhoods_match.tsv',
+                                  delim = '\t',
                                   col_names = c("abbreviation", "neighborhood"),
                                   col_types = cols(col_character(), col_character())
 )
@@ -79,11 +79,11 @@ intuitively one would assume that neighborhoods closer together might covary
 more than neighborhoods farther apart.
 
 ```{r}
-data %>% 
-  ggplot() + 
-  geom_boxplot(aes(x = Neighborhood, y = SalePrice)) + 
-  theme_bw() + 
-  scale_x_discrete(guide = guide_axis(n.dodge = 3)) + 
+data %>%
+  ggplot() +
+  geom_boxplot(aes(x = Neighborhood, y = SalePrice)) +
+  theme_bw() +
+  scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
   scale_y_continuous(labels = scales::dollar, breaks = seq(0, 1e6, by = 1e5))
 ```
 
@@ -133,7 +133,7 @@ mm_mp_geocode = memoise::memoise(f = function(address, key){mp_geocode(address, 
 What returns is essentially an XML response with some metadata and location
 information, as well as return status.
 
-```{r geocode-ames, cache = TRUE}
+```{r geocode-ames}
 ames_bb = mm_mp_geocode("ames, iowa", key = api_key)
 ames_bb
 ```
@@ -144,9 +144,9 @@ ames_bb
 ames_poly = mp_get_bounds(ames_bb)
 ames_pt   = mp_get_points(ames_bb)
 ggmap::register_google(key = api_key)
-ames_ia_map = suppressMessages(ggmap::get_map(location = sf::st_coordinates(ames_pt), zoom = 12, source = 'google', messaging = FALSE)) 
+ames_ia_map = suppressMessages(ggmap::get_map(location = sf::st_coordinates(ames_pt), zoom = 12, source = 'google', messaging = FALSE))
 
-ggmap(ggmap = ames_ia_map) + 
+ggmap(ggmap = ames_ia_map) +
   geom_polygon(data = ames_poly %>% st_coordinates() %>% as.data.frame, aes(x = X, y = Y),
                fill = NA, color = 'red4')
 ```
@@ -171,7 +171,7 @@ neighborhoods = neighborhoods %>%
   mutate(search = case_when(
     abbreviation == 'swisu' ~ "Iowa State University",
     TRUE ~ search
-  )) %>% 
+  )) %>%
   filter(abbreviation != "npkvill")
 
 neighborhoods$search
@@ -181,10 +181,227 @@ neighborhoods$search
 I'm ready to plug each of these addresses into the `mp_geocode` function, or
 rather our memoised version of it.
 
-```{r geocode-neighbors, cache = TRUE}
-neigh_geocode = mm_mp_geocode(address = neighborhoods$search, key = api_key)
+```{r geocode-neighbors}
+neigh_geocode = neighborhoods$search %>% map(.f = ~mm_mp_geocode(address = .x, key = api_key))
 ```
 
+First I tried to get the bounding boxes of each neighborhood to see the result:
+
+```{r}
+neigh_bb = neigh_geocode %>% map(.f = ~try(mp_get_bounds(.x)))
+```
+
+Clearly there were a number of errors; some of the types returned were points,
+having no bounding box. Already not too good of a start. What have we got?
+
+```{r}
+# Subset out the errors
+neigh_bb_errors = neigh_bb %>% map_lgl(.f = ~inherits(.x, "try-error"))
+neigh_bb = neigh_bb[!neigh_bb_errors]
+
+# Print a sample
+neigh_bb[[1]]
+```
+
+We're using the `sf` package for the "Simple Features" geometries, using
+[well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
+values.
+
+```{r}
+
+# Get the neighborhood bounding box points for mapping
+n_points = map2(.x = neigh_bb,
+                .y = neighborhoods$neighborhood[!neigh_bb_errors],
+                .f = ~sf::st_coordinates(.x) %>% as.data.frame %>% cbind(.y, .)
+                )
+
+ggmap(ames_ia_map) +
+  map(.x = n_points, .f = ~geom_polygon(data = .x, aes(x = X, y = Y), fill = NA, color = 'red4')) +
+  map(.x = n_points, .f = ~geom_text(data = .x , aes(x = mean(X), y = mean(Y), label = .y)))
+
+```
+
+Evidently polygon definitions for the neighborhoods isn't as easily obtained, so
+I resort to using centroids to define the spatial information.
+
+```{r neigh-centroids}
+# Get the centroid points
+neigh_centroids = map(.x = neigh_geocode, .f = ~.x %>% mp_get_points())
+# Combine these simple features into a data.frame
+neigh_cent_df  = neigh_centroids %>% do.call(what = rbind, args = .)
+# Add the coordinates themselves to the data frame
+neigh_cent_df = cbind(neigh_cent_df, st_coordinates(neigh_cent_df))
+# Join this with our neighborhoods table
+neighborhoods$geometry = neigh_cent_df$pnt
+coords = st_coordinates(neigh_cent_df)
+neighborhoods$X = coords[,1]
+neighborhoods$Y = coords[,2]
+
+neighborhoods %>% select(neighborhood, geometry, X, Y)
+```
+
+
+```{r, warning=FALSE}
+ggmap(ames_ia_map) +
+  geom_point(data = neighborhoods, aes(x = X, y = Y)) +
+  geom_text_repel(data = neighborhoods, aes(x = X, y = Y, label = neighborhood)) +
+  ggtitle("Neighborhood Centroids")
+```
+
+Having the centroids, integrate this with the data:
+
+```{r}
+# Set to UTM
+neighborhoods = neighborhoods %>%
+  mutate(geometry_utm = sf::st_transform(geometry, 32615),
+         easting  = sf::st_coordinates(geometry_utm)[,1],
+         northing = sf::st_coordinates(geometry_utm)[,2])
+
+data$neigh_centroid = neighborhoods$geometry_utm[match(x = data$Neighborhood, neighborhoods$abbreviation)]
+data = data[!sf::st_is_empty(data$neigh_centroid), ]
+coords = data$neigh_centroid %>% st_coordinates()
+
+data$easting = coords[,1]
+data$northing = coords[,2]
+```
+
+## Models 
+
+### Modeling using neighborhood centroids
+
+The question I had was; does modeling the neighborhoods as continuous location
+variables improve prediction performance?
+
+I split the data into training and test sets, and remove the Neighborhood names themselves
+
+```{r data-setup-location-based}
+train_test = sample(c(1,2), size = nrow(data), replace = TRUE, prob = c(0.75, 0.25))
+data$train_test = train_test
+
+train_data = data %>%
+  filter(train_test == 1) %>%
+  select(-Neighborhood, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC) %>%
+  modify_if(.p = ~is.character(.x), .f = ~factor(.x))
+
+test_data = data %>%
+  filter(train_test == 2)  %>%
+  select(-Neighborhood, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC)%>%
+  modify_if(.p = ~is.character(.x), .f = ~factor(.x))
+
+options(na.action = na.pass)
+mm_data = model.matrix(SalePrice~ -1 + ., data = data %>%
+                         select(-Neighborhood, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC))
+mm_train = mm_data[data$train_test == 1,]
+mm_test  = mm_data[data$train_test == 2,]
+```
+
+XGboost takes a matrix covariate input, so I use `model.matrix` to format the
+input properly.
+
+```{r model-location, results = 'hide', cache = TRUE}
+xgb = xgboost(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
+              max_depth = 12, subsample = 0.5)
+```
+```{r}
+xgb
+```
+
+
+Additionally, run cross-validation to assess out-of-sample measurement error.
+
+```{r, results = 'hide', cache = TRUE}
+cv_locs = xgb.cv(data = mm_train, label = train_data$SalePrice, nrounds = 500, early_stopping_rounds = 10,
+       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+```
+```{r}
+cv_locs
+```
+
+
+Out-of-sample test error:
+
+```{r}
+prediction = predict(xgb, mm_train)
+resid = prediction - train_data$SalePrice
+train_data$resid = resid
+predict_test = predict(xgb, mm_test)
+resid_test = predict_test - test_data$SalePrice
+test_data$resid = resid_test
+# RMSE
+rmse = mean(sqrt(resid_test^2))
+
+plot(resid_test)
+points(resid, col = 'red')
+title(main = paste0("RMSE: ", scales::dollar(rmse)))
+
+```
+
+### Modeling with neighborhoods as factors
+
+Now, compare with using the neighborhood names as straight factors:
+
+```{r data-setup-factor}
+# Does Neighborhood make a more informative prediction?
+train_data_fac = data %>%
+  filter(train_test == 1) %>%
+  select(-easting, -northing, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC) %>%
+  modify_if(.p = ~is.character(.x), .f = ~factor(.x))
+
+test_data_fac = data %>%
+  filter(train_test == 2)  %>%
+  select(-easting, -northing, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC)%>%
+  modify_if(.p = ~is.character(.x), .f = ~factor(.x))
+
+mm_data = model.matrix(SalePrice~ -1 + ., data = data %>%
+                         select(-easting, -northing, -neigh_centroid, -Id, -train_test, -Utilities, -PoolQC))
+mm_train = mm_data[data$train_test == 1,]
+mm_test  = mm_data[data$train_test == 2,]
+```
+
+```{r model-factor, results = 'hide', cache = TRUE}
+xgb_fac = xgboost(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
+              max_depth = 12, subsample = 0.5)
+```
+
+```{r}
+xgb_fac
+```
+
+
+```{r, results = 'hide', cache = TRUE}
+cv_fac = xgb.cv(data = mm_train, label = train_data_fac$SalePrice, nrounds = 500, early_stopping_rounds = 10,
+       max_depth = 12, subsample = 0.5, nfold = 10, metrics = 'rmse')
+```
+
+```{r}
+cv_fac
+```
+
+
+Out-of-sample test error:
+
+```{r}
+prediction = predict(xgb_fac, mm_train)
+resid = prediction - train_data_fac$SalePrice
+train_data_fac$resid_fac = resid
+
+predict_test = predict(xgb_fac, mm_test)
+resid_test = predict_test - test_data_fac$SalePrice
+test_data_fac$resid_fac
+# RMSE
+rmse = mean(sqrt(resid_test^2))
+
+plot(resid_test)
+points(resid, col = 'red')
+title(main = paste0("RMSE: ", scales::dollar(rmse)))
+
+```
+
+# Conclusion
+
+This turned out to be mostly an exercise in geocoding and formatting spatial
+data; it doesn't appear that geocoding the locations actually reduces prediction
+error by a large margin.
 
 ---
 
