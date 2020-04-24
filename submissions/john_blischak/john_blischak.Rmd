@@ -1,9 +1,13 @@
 ---
 title: "How does first programming language affect ability to learn R?"
-author: "John Blischak"
-date: "2020-04-21"
 output: github_document
 ---
+
+**Author:** John Blischak
+
+**Date:** 2020-04-22
+
+**License:** [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.width = 10)
@@ -152,6 +156,8 @@ survey <- survey %>%
     Qr_experience != "None"
   ) %>%
   mutate(
+    age = 2018 - Qyear_born,
+    r_years = 2018 - Qr_year,
     Qr_experience = factor(Qr_experience,
                            levels = c("Beginner", "Intermediate", "Expert")),
     Qtime_to_proficiency = factor(Qtime_to_proficiency,
@@ -164,8 +170,11 @@ I focused on the data of [reported first language
 learned](https://github.com/rstudio/learning-r-survey/blob/master/2018/dictionary/first-language-dictionary.tsv).
 Specifically, I was interested to see if there was any evidence that prior
 exposure to specific programming paradigms influenced the ability to learn R.
-After applying quality filters and only keeping participants that could be
-assigned to a large enough group of first programming language, I was left with
+For example, since [R began as a Lisp-like interpreter written in
+C](https://www.stat.auckland.ac.nz/~ihaka/downloads/Interface98.pdf), does
+experience with Lisp and/or C provide any advantage when trying to grok R? After
+applying quality filters and only keeping participants that could be assigned to
+a large enough group of first programming language, I was left with
 `r nrow(survey)` participants.
 
 **Disclaimers:**
@@ -196,7 +205,6 @@ comparable.
 
 ```{r age}
 survey %>%
-  mutate(age = 2018 - Qyear_born) %>%
   ggplot() +
   aes(x = first_lang, y = age) +
   geom_boxplot() +
@@ -209,12 +217,11 @@ expected. But Lisp-first programmers had the highest median years of R usage.
 
 ```{r r-usage}
 survey %>%
-  mutate(r_years = 2018 - Qr_year) %>%
   ggplot() +
   aes(x = first_lang, y = r_years) +
   geom_boxplot() +
   labs(x = "First programming language",
-       y = "Age")
+       y = "Years of R usage")
 ```
 
 And for self-reported R experience, the main outlier are those whose first

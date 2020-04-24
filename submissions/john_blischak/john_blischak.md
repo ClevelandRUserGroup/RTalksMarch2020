@@ -1,7 +1,11 @@
 How does first programming language affect ability to learn R?
 ================
-John Blischak
-2020-04-21
+
+**Author:** John Blischak
+
+**Date:** 2020-04-22
+
+**License:** [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 The data comes from [RStudio’s 2018 survey on learning
 R](https://github.com/rstudio/learning-r-survey). The raw data includes
@@ -11,7 +15,11 @@ I focused on the data of [reported first language
 learned](https://github.com/rstudio/learning-r-survey/blob/master/2018/dictionary/first-language-dictionary.tsv).
 Specifically, I was interested to see if there was any evidence that
 prior exposure to specific programming paradigms influenced the ability
-to learn R. After applying quality filters and only keeping participants
+to learn R. For example, since [R began as a Lisp-like interpreter
+written in
+C](https://www.stat.auckland.ac.nz/~ihaka/downloads/Interface98.pdf),
+does experience with Lisp and/or C provide any advantage when trying to
+grok R? After applying quality filters and only keeping participants
 that could be assigned to a large enough group of first programming
 language, I was left with 2603 participants.
 
